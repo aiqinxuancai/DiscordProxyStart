@@ -45,8 +45,6 @@ namespace DiscordProxyStart
                     process.StartInfo.FileName = updatePath;
                     process.StartInfo.Arguments = $"--processStart Discord.exe --a=--proxy-server={proxy}";
                     process.StartInfo.WorkingDirectory = appPath;
-
-
                     process.Start();
                 }
                 
