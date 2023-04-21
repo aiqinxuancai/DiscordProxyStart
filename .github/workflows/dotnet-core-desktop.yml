@@ -28,15 +28,11 @@ jobs:
 
       #- run: powershell Compress-Archive -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.exe", ".\Release\version.dll"  -DestinationPath .\DiscordProxyStart.zip
 
-      - run: powershell Compress-Archive -Path .\build -DestinationPath .\DiscordProxyStart.zip
+      - run: powershell Compress-Archive -Path ".\build" -DestinationPath ".\DiscordProxyStart.zip"
       - name: Create a Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "DiscordProxyStart.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-#       - name: Create a Release CMD
-#         uses: ncipollo/release-action@v1
-#         with:
-#           artifacts: "DotNetDllPathPatcherCMD.zip"
-#           token: ${{ secrets.GITHUB_TOKEN }}
+
         
