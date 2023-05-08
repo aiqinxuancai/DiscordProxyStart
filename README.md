@@ -10,4 +10,4 @@ Config.ini配置例子：
 Proxy=http://127.0.0.1:1080
 ```
 
-你可以创建按`Win+R`输入`shell:startup`回车，按住`Alt`键拖动`DiscordProxyStart.exe`到此目录中实现开机启动。
+你可以按下`Win+R`输入`shell:startup`回车，按住`Alt`键拖动`DiscordProxyStart.exe`到此目录中实现开机启动。
