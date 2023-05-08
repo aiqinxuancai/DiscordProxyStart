@@ -1,5 +1,6 @@
 ﻿using DiscordProxyStart.Utils;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 
 namespace DiscordProxyStart
@@ -33,19 +34,24 @@ namespace DiscordProxyStart
 
             try
             {
+                Debug.WriteLine("正在准备启动...");
                 var appPath = GetAppPath(setupPath);
                 var proxy = GetProxy();
                 var copyResult = CopyVersionDll(setupPath);
 
                 //TODO 自动gost转换socks代理？
 
-                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath))
+                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath.FirstOrDefault()))
                 {
+                    Debug.WriteLine("启动进程...");
                     var process = new Process();
                     process.StartInfo.FileName = updatePath;
                     process.StartInfo.Arguments = $"--processStart Discord.exe --a=--proxy-server={proxy}";
-                    process.StartInfo.WorkingDirectory = appPath;
+                    process.StartInfo.WorkingDirectory = appPath.FirstOrDefault();
                     process.Start();
+
+                    //TODO 等待升级窗口出现并销毁
+                    WaitUpdater(setupPath);
                 }
                 
             }
@@ -53,6 +59,34 @@ namespace DiscordProxyStart
             {
                 MsgBox.Show("Error", ex.Message, MsgBoxButtons.OK);
             }
+        }
+
+        private static void WaitUpdater(string setupPath)
+        {
+
+
+            int fullWaitCount = 0;
+            //等待窗口出现
+            while (User32.FindWindow("Chrome_WidgetWin_1", "Discord Updater") == 0)
+            {
+                Task.Delay(100).Wait();
+                fullWaitCount += 100;
+                if (fullWaitCount > 30 * 1000) //30秒没发现进程有启动
+                {
+                    //没有正确启动 返回
+                    return;
+                }
+            }
+
+            Debug.WriteLine("Discord Updater已创建");
+
+            while (User32.FindWindow("Chrome_WidgetWin_1", "Discord Updater") > 0) //等待更新窗口销毁
+            {
+                CopyVersionDll(setupPath);
+                Task.Delay(100).Wait();
+            }
+
+            Debug.WriteLine("Discord Updater已销毁");
         }
 
 
@@ -83,11 +117,11 @@ namespace DiscordProxyStart
             return proxy.Replace("\"", "").Trim();
         }
 
-        private static string GetAppPath(string setupPath)
+        private static List<string> GetAppPath(string setupPath)
         {
             var subDirs = Directory.GetDirectories(setupPath);
-
-            var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
+            List<string> paths = new List<string>();
+           var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
 
             if (File.Exists(dllFilePath))
             {
@@ -95,15 +129,20 @@ namespace DiscordProxyStart
                 {
                     var dirName = Path.GetFileName(subDir);
                     Console.WriteLine(dirName);
-                    if (dirName.StartsWith("app-")) //理论上有一个
+                    if (dirName.StartsWith("app-")) //理论上有一个，遇到升级可能有两个
                     {
-                        return subDir;
+                        paths.Add(subDir);
                     }
                 }
             }
-            return string.Empty;
+            return paths;
         }
 
+        /// <summary>
+        /// 获取Discord目录的下所有app-开头目录并检查是否有version.dll,如果没有则复制
+        /// </summary>
+        /// <param name="setupPath"></param>
+        /// <returns></returns>
         private static bool CopyVersionDll(string setupPath)
         {
             var appPath = GetAppPath(setupPath);
@@ -111,9 +150,18 @@ namespace DiscordProxyStart
             //自动下载缺少的dll？
 
             var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
-            var newPath = Path.Combine(appPath, "version.dll");
 
-            File.Copy(dllFilePath, newPath, true); //文件有可能被占用
+
+            foreach (var path in appPath)
+            {
+                var newPath = Path.Combine(path, "version.dll");
+                if (!File.Exists(newPath))
+                {
+                    File.Copy(dllFilePath, newPath, true); //文件有可能被占用
+                }
+            }
+
+
             return true;
 
         }
