@@ -24,12 +24,13 @@ namespace DiscordProxyStart.Servers
             //startInfo.UseShellExecute = true;
             //startInfo.EnvironmentVariables.Add("http_proxy", proxy); 
             //startInfo.EnvironmentVariables.Add("https_proxy", proxy);
-            
+
             //Process.Start(startInfo);
 
+           
+            //string commands = $"env http_proxy=\"{proxy}\" https_proxy=\"{proxy}\" /Applications/Discord.app/Contents/MacOS/Discord --proxy-server=\"{proxy}\"\n";
 
-
-            string commands = $"export http_proxy={proxy}\nexport http_proxy={proxy}\n/Applications/Discord.app/Contents/MacOS/Discord --proxy-server={proxy}\n";
+            string commands = $"export http_proxy=\"{proxy}\"\nexport https_proxy=\"{proxy}\"\n/Applications/Discord.app/Contents/MacOS/Discord --proxy-server=\"{proxy}\"\n";
 
             Process process = new Process();
 
