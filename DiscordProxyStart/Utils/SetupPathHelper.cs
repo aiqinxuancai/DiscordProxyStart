@@ -12,6 +12,7 @@ namespace DiscordProxyStart.Utils
         public static string GetInstallPath(string appName)
         {
             string installPath = string.Empty;
+
             try
             {
                 RegistryKey registryKey = Registry.CurrentUser.OpenSubKey($@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{appName}");
@@ -31,6 +32,7 @@ namespace DiscordProxyStart.Utils
                 // 返回 Discord 的安装目录
                 return installPath;
             }
+
 
             return string.Empty; // 找不到安装目录时返回 null
         }
