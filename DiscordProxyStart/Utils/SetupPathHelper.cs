@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordProxyStart.Utils
@@ -20,21 +21,42 @@ namespace DiscordProxyStart.Utils
             }
             catch
             {
-                // 处理异常情况，例如 Discord 未安装在默认位置时
             }
 
-            if (string.IsNullOrWhiteSpace(installPath))
+            if (!string.IsNullOrWhiteSpace(installPath))
             {
-                // 处理无法找到安装目录的情况
-            }
-            else
-            {
-                // 返回 Discord 的安装目录
                 return installPath;
             }
 
+            return string.Empty;
+        }
 
-            return string.Empty; // 找不到安装目录时返回 null
+        public static string GetDiscordExePath(string appName)
+        {
+
+            try
+            {
+                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey($@"SOFTWARE\Classes\{appName}\shell\open\command");
+                var discordExePath = registryKey.GetValue(null).ToString();
+
+                if (discordExePath != null)
+                {
+                    var regex = new Regex(@"\""(.*?)\""", RegexOptions.Multiline);
+                    var match = regex.Match(discordExePath);
+                    if (match.Success)
+                    {
+                        return match.Groups[1].Value;
+                    }
+
+                }
+            }
+            catch
+            {
+               
+            }
+
+
+            return string.Empty;
         }
     }
 }

@@ -17,11 +17,73 @@ namespace DiscordProxyStart.Servers
 
             if (string.IsNullOrEmpty(setupPath) || !Directory.Exists(setupPath))
             {
-                MsgBox.Show("Error", "没有找到Discord安装目录", MsgBoxButtons.OK);
-                Debug.WriteLine("没有找到安装目录");
-                return;
+                var exePath = SetupPathHelper.GetDiscordExePath("Discord");
+                
+                if (File.Exists(exePath))
+                {
+                    PortableStart(exePath);
+                }
+                else
+                {
+                    MsgBox.Show("Error", "没有找到Discord安装目录", MsgBoxButtons.OK);
+                    Debug.WriteLine("没有找到安装目录");
+                    return;
+                }
+                
+            }
+            else
+            {
+                //正常安装由此启动
+                NormalStart(setupPath);
             }
 
+        }
+
+        
+        /// <summary>
+        /// 绿色版启动
+        /// </summary>
+        /// <param name="exePath"></param>
+        private static void PortableStart(string exePath)
+        {
+            try
+            {
+                var setupPath = Path.GetDirectoryName(Path.GetDirectoryName(exePath));
+                Debug.WriteLine("正在准备启动...");
+                var appPath = GetAppPath(setupPath);
+                var proxy = GetProxy();
+                var copyResult = CopyVersionDll(setupPath);
+
+                //TODO 自动gost转换socks代理？
+
+                var appPathFirst = appPath.FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPathFirst))
+                {
+                    Debug.WriteLine("启动进程...");
+                    var process = new Process();
+                    process.StartInfo.FileName = exePath;
+                    process.StartInfo.Arguments = $@"--proxy-server={proxy} --user-data-dir={Path.Combine(setupPath, "data") }";
+                    process.StartInfo.WorkingDirectory = appPathFirst;
+                    process.Start();
+
+                    //TODO 等待升级窗口出现并销毁
+                    WaitUpdater(setupPath);
+                }
+                else
+                {
+                    MsgBox.Show("Error", $"{exePath}\n{proxy}\n{copyResult}\n{appPathFirst}\n{setupPath}", MsgBoxButtons.OK);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MsgBox.Show("Error", ex.Message, MsgBoxButtons.OK);
+            }
+        }
+
+        private static void NormalStart(string setupPath)
+        {
             var updatePath = Path.Combine(setupPath, "Update.exe");
 
             if (!File.Exists(updatePath))
@@ -59,6 +121,8 @@ namespace DiscordProxyStart.Servers
                 MsgBox.Show("Error", ex.Message, MsgBoxButtons.OK);
             }
         }
+
+
 
         private static void WaitUpdater(string setupPath)
         {
@@ -161,7 +225,7 @@ namespace DiscordProxyStart.Servers
             }
 
 
-            return true;
+            return appPath.Count > 0;
 
         }
     }
