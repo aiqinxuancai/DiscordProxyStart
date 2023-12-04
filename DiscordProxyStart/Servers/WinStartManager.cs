@@ -13,7 +13,20 @@ namespace DiscordProxyStart.Servers
 
         public static void Start()
         {
+
+            
+            var iniPath = Path.Combine(AppContext.BaseDirectory, "Config.ini");
+
+            //如果配置文件中有配置
             var setupPath = SetupPathHelper.GetInstallPath("Discord");
+            if (File.Exists(iniPath))
+            {
+                var path = IniFileHelper.GetIniValue(iniPath, "Config", "Path");
+                if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+                {
+                    setupPath = path;
+                }
+            }
 
             if (string.IsNullOrEmpty(setupPath) || !Directory.Exists(setupPath))
             {
