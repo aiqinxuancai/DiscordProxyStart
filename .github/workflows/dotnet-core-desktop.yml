@@ -16,12 +16,17 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '7.0.*'
-      - run: dotnet publish -c Release --runtime win-x64 /p PublishAot=true
-      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.8/Release.zip -o Release.zip
-      - run: powershell Expand-Archive -Path .\Release.zip -DestinationPath .\Release
-      - run: powershell New-Item -ItemType Directory -Force -Path ".\build\Data"
-      - run: powershell Copy-Item -Path ".\Release\version.dll" -Destination ".\build\Data"
+          dotnet-version: '8.0.*'
+      - run: dotnet publish -c Release --runtime win-x64 /p PublishAot=true --self-contained=true
+      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.10/x64.zip -o x64.zip
+      - run: powershell Expand-Archive -Path .\x64.zip -DestinationPath .\x64
+      - run: powershell New-Item -ItemType Directory -Force -Path ".\build\x64"
+      - run: powershell Copy-Item -Path ".\x64\version.dll" -Destination ".\build\x64"
+
+      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.10/x86.zip -o x86.zip
+      - run: powershell Expand-Archive -Path .\x86.zip -DestinationPath .\x86
+      - run: powershell New-Item -ItemType Directory -Force -Path ".\build\x86"
+      - run: powershell Copy-Item -Path ".\x86\version.dll" -Destination ".\build\x86"
 
       - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.exe" -Destination ".\build"
       - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.pdb" -Destination ".\build"
