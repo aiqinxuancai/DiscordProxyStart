@@ -18,7 +18,7 @@ namespace DiscordProxyStart.Servers
             var iniPath = Path.Combine(AppContext.BaseDirectory, "Config.ini");
 
             //如果配置文件中有配置
-            var setupPath = SetupPathHelper.GetInstallPath("Discord");
+            var setupPath = SetupPathHelper.GetInstallPath("Discord"); 
             if (File.Exists(iniPath))
             {
                 var path = IniFileHelper.GetIniValue(iniPath, "Config", "Path");
@@ -63,29 +63,38 @@ namespace DiscordProxyStart.Servers
             {
                 var setupPath = Path.GetDirectoryName(Path.GetDirectoryName(exePath));
                 Debug.WriteLine("正在准备启动...");
-                var appPath = GetAppPath(setupPath);
+                var appPath = GetAppPaths(setupPath);
                 var proxy = GetProxy();
-                var copyResult = CopyVersionDll(setupPath);
 
-                //TODO 自动gost转换socks代理？
+#if DEBUG
+                proxy = "http://127.0.0.1:1081";
+#endif
 
-                var appPathFirst = appPath.FirstOrDefault();
+                Debug.WriteLine(proxy);
+  
+                var appPathFirst = appPath.lastVersion;
 
-                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPathFirst))
+                if (!string.IsNullOrEmpty(proxy) && Directory.Exists(appPathFirst))
                 {
                     Debug.WriteLine("启动进程...");
                     var process = new Process();
                     process.StartInfo.FileName = exePath;
                     process.StartInfo.Arguments = $@"--proxy-server={proxy} --user-data-dir={Path.Combine(setupPath, "data") }";
                     process.StartInfo.WorkingDirectory = appPathFirst;
+                    //process.StartInfo.EnvironmentVariables["HTTPS_PROXY"] = proxy;
+                    //process.StartInfo.EnvironmentVariables["HTTP_PROXY"] = proxy;
+
                     process.Start();
 
                     //TODO 等待升级窗口出现并销毁
-                    WaitUpdater(setupPath);
+                    WaitUpdater(setupPath, appPath);
+
+
+                    //TODO 检查是否有更新
                 }
                 else
                 {
-                    MsgBox.Show("Error", $"{exePath}\n{proxy}\n{copyResult}\n{appPathFirst}\n{setupPath}", MsgBoxButtons.OK);
+                    MsgBox.Show("Error", $"{exePath}\n{proxy}\n{appPathFirst}\n{setupPath}", MsgBoxButtons.OK);
                 }
 
             }
@@ -97,35 +106,50 @@ namespace DiscordProxyStart.Servers
 
         private static void NormalStart(string setupPath)
         {
-            var updatePath = Path.Combine(setupPath, "Update.exe");
+            //var updatePath = Path.Combine(setupPath, "Update.exe");
 
-            if (!File.Exists(updatePath))
-            {
-                MsgBox.Show("Error", "没有找到入口程序Update.exe", MsgBoxButtons.OK);
-                Debug.WriteLine("没有找到入口程序Update.exe");
-                return;
-            }
+            //if (!File.Exists(updatePath))
+            //{
+            //    MsgBox.Show("Error", "没有找到入口程序Update.exe", MsgBoxButtons.OK);
+            //    Debug.WriteLine("没有找到入口程序Update.exe");
+            //    return;
+            //}
 
             try
             {
-                Debug.WriteLine("正在准备启动...");
-                var appPath = GetAppPath(setupPath);
+               
+                var appPaths = GetAppPaths(setupPath);
                 var proxy = GetProxy();
-                var copyResult = CopyVersionDll(setupPath);
 
-                //TODO 自动gost转换socks代理？
+#if DEBUG
+                proxy = "http://127.0.0.1:1081";
+#endif
+                Debug.WriteLine($"正在准备启动 {appPaths.lastVersion} {proxy} ...");
+                var appPath = Path.Combine(setupPath, appPaths.lastVersion);
 
-                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath.FirstOrDefault()))
+
+                if (!string.IsNullOrEmpty(proxy) && Directory.Exists(appPath))
                 {
                     Debug.WriteLine("启动进程...");
                     var process = new Process();
-                    process.StartInfo.FileName = updatePath;
-                    process.StartInfo.Arguments = $"--processStart Discord.exe --a=--proxy-server={proxy}";
-                    process.StartInfo.WorkingDirectory = appPath.FirstOrDefault();
+                    process.StartInfo.FileName = Path.Combine(appPath, "Discord.exe"); ;
+                    //process.StartInfo.Arguments = $"--processStart Discord.exe --a=--proxy-server={proxy}";
+                    process.StartInfo.Arguments = $"--proxy-server={proxy}";
+                    process.StartInfo.WorkingDirectory = appPath;
+                    process.StartInfo.EnvironmentVariables["HTTPS_PROXY"] = proxy;
+                    process.StartInfo.EnvironmentVariables["HTTP_PROXY"] = proxy;
+
+                    process.StartInfo.EnvironmentVariables["https_proxy"] = proxy;
+                    process.StartInfo.EnvironmentVariables["http_proxy"] = proxy;
+
                     process.Start();
 
                     //TODO 等待升级窗口出现并销毁
-                    WaitUpdater(setupPath);
+                    WaitUpdater(setupPath, appPaths);
+                }
+                else
+                {
+                    Debug.WriteLine("无法启动...");
                 }
 
             }
@@ -136,11 +160,13 @@ namespace DiscordProxyStart.Servers
         }
 
 
-
-        private static void WaitUpdater(string setupPath)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="setupPath"></param>
+        /// <returns></returns>
+        private static void WaitUpdater(string setupPath, (string lastVersion, List<string> allVersion) appPaths)
         {
-
-
             int fullWaitCount = 0;
             //等待窗口出现
             while (User32.FindWindow("Chrome_WidgetWin_1", "Discord Updater") == 0)
@@ -156,13 +182,34 @@ namespace DiscordProxyStart.Servers
 
             Debug.WriteLine("Discord Updater已创建");
 
+
+            bool hasUpdate = false;
             while (User32.FindWindow("Chrome_WidgetWin_1", "Discord Updater") > 0) //等待更新窗口销毁
             {
-                CopyVersionDll(setupPath);
+                //检查是否有更新！如果有更新，在进程结束后主动结束一次新创建的Discord
+                if (!hasUpdate && HasUpdate(setupPath, appPaths))
+                {
+                    hasUpdate = true;
+                    Debug.WriteLine("正在进行更新");
+                }
                 Task.Delay(100).Wait();
             }
-
             Debug.WriteLine("Discord Updater已销毁");
+        }
+
+        /// <summary>
+        /// 是否有升级？
+        /// </summary>
+        /// <param name="setupPath"></param>
+        /// <returns></returns>
+        private static bool HasUpdate(string setupPath, (string lastVersion, List<string> allVersion) appPaths)
+        {
+            var currentPath = GetAppPaths(setupPath);
+            if (currentPath.lastVersion != appPaths.lastVersion)
+            {
+                return true;
+            }
+            return false;
         }
 
 
@@ -193,53 +240,49 @@ namespace DiscordProxyStart.Servers
             return proxy.Replace("\"", "").Trim();
         }
 
-        private static List<string> GetAppPath(string setupPath)
+        private static (string lastVersion, List<string> allVersion) GetAppPaths(string setupPath)
         {
             var subDirs = Directory.GetDirectories(setupPath);
             List<string> paths = new List<string>();
-            var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
-
-            if (File.Exists(dllFilePath))
+            Version lastVersion = new Version(0, 0, 0, 0);
+            string lastVersionAppPath = string.Empty;
+            foreach (var subDir in subDirs)
             {
-                foreach (var subDir in subDirs)
+                var pathName = Path.GetFileName(subDir);
+                var pathVersion = pathName.Replace("app-", "");
+                if (Version.TryParse(pathVersion, out var version))
                 {
-                    var dirName = Path.GetFileName(subDir);
-                    Console.WriteLine(dirName);
-                    if (dirName.StartsWith("app-")) //理论上有一个，遇到升级可能有两个
+                    if (version > lastVersion)
                     {
-                        paths.Add(subDir);
+                        lastVersion = version;
+                        lastVersionAppPath = pathName;
                     }
+                    paths.Add(subDir);
                 }
+                Console.WriteLine(pathName);
             }
-            return paths;
+            return (lastVersionAppPath, paths);
         }
 
-        /// <summary>
-        /// 获取Discord目录的下所有app-开头目录并检查是否有version.dll,如果没有则复制
-        /// </summary>
-        /// <param name="setupPath"></param>
-        /// <returns></returns>
-        private static bool CopyVersionDll(string setupPath)
-        {
-            var appPath = GetAppPath(setupPath);
-
-            //自动下载缺少的dll？
-
-            var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
-
-
-            foreach (var path in appPath)
-            {
-                var newPath = Path.Combine(path, "version.dll");
-                if (!File.Exists(newPath))
-                {
-                    File.Copy(dllFilePath, newPath, true); //文件有可能被占用
-                }
-            }
-
-
-            return appPath.Count > 0;
-
-        }
+        ///// <summary>
+        ///// 获取Discord目录的下所有app-开头目录并检查是否有version.dll,如果没有则复制
+        ///// </summary>
+        ///// <param name="setupPath"></param>
+        ///// <returns></returns>
+        //private static bool CopyVersionDll(string setupPath)
+        //{
+        //    var appPath = GetAppPath(setupPath);
+        //    //自动下载缺少的dll？
+        //    var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
+        //    foreach (var path in appPath)
+        //    {
+        //        var newPath = Path.Combine(path, "version.dll");
+        //        if (!File.Exists(newPath))
+        //        {
+        //            File.Copy(dllFilePath, newPath, true); //文件有可能被占用
+        //        }
+        //    }
+        //    return appPath.Count > 0;
+        //}
     }
 }
