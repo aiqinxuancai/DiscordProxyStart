@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '8.0.*'
-      - run: dotnet publish -c Release --runtime win-x64 /p PublishAot=true --self-contained=true
+      - run: dotnet publish -c Release --runtime win-x64 --self-contained=true /p PublishAot=true
       - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.10/x64.zip -o x64.zip
       - run: powershell Expand-Archive -Path .\x64.zip -DestinationPath .\x64
       - run: powershell New-Item -ItemType Directory -Force -Path ".\build\x64"
@@ -28,9 +28,9 @@ jobs:
       - run: powershell New-Item -ItemType Directory -Force -Path ".\build\x86"
       - run: powershell Copy-Item -Path ".\x86\version.dll" -Destination ".\build\x86"
 
-      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.exe" -Destination ".\build"
-      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.pdb" -Destination ".\build"
-      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\Config.ini" -Destination ".\build"
+      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net8.0\win-x64\publish\DiscordProxyStart.exe" -Destination ".\build"
+      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net8.0\win-x64\publish\DiscordProxyStart.pdb" -Destination ".\build"
+      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net8.0\win-x64\publish\Config.ini" -Destination ".\build"
       #- run: powershell Compress-Archive -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.exe", ".\Release\version.dll"  -DestinationPath .\DiscordProxyStart.zip
 
       - run: powershell Compress-Archive -Path ".\build" -DestinationPath ".\DiscordProxyStart-win-amd64.zip"
