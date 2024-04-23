@@ -199,18 +199,16 @@ namespace DiscordProxyStart.Servers
             List<string> paths = new List<string>();
             var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
 
-            if (File.Exists(dllFilePath))
+            foreach (var subDir in subDirs)
             {
-                foreach (var subDir in subDirs)
+                var dirName = Path.GetFileName(subDir);
+                Console.WriteLine(dirName);
+                if (dirName.StartsWith("app-")) //理论上有一个，遇到升级可能有两个
                 {
-                    var dirName = Path.GetFileName(subDir);
-                    Console.WriteLine(dirName);
-                    if (dirName.StartsWith("app-")) //理论上有一个，遇到升级可能有两个
-                    {
-                        paths.Add(subDir);
-                    }
+                    paths.Add(subDir);
                 }
             }
+
             return paths;
         }
 
@@ -223,17 +221,43 @@ namespace DiscordProxyStart.Servers
         {
             var appPath = GetAppPath(setupPath);
 
-            //自动下载缺少的dll？
-
-            var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
-
+            //TODO 自动下载缺少的dll？
 
             foreach (var path in appPath)
             {
-                var newPath = Path.Combine(path, "version.dll");
-                if (!File.Exists(newPath))
+                var discordExePath = Path.Combine(path, "Discord.exe");
+                var exeMachineType = PEUtils.GetExecutableMachineType(discordExePath);
+                var targetDllPath = Path.Combine(path, "version.dll");
+                var dllFilePath = Path.Combine(AppContext.BaseDirectory, "x86", "version.dll");
+
+                if (exeMachineType == PEUtils.MachineType.IMAGE_FILE_MACHINE_AMD64)
                 {
-                    File.Copy(dllFilePath, newPath, true); //文件有可能被占用
+                    dllFilePath = Path.Combine(AppContext.BaseDirectory, "x64", "version.dll");
+                }
+
+
+                if (!File.Exists(dllFilePath))
+                {
+                    throw new FileNotFoundException($"没有找到本地的 {dllFilePath}");
+                }
+                if (!File.Exists(discordExePath))
+                {
+                    throw new FileNotFoundException($"目标路径没有 {discordExePath} ？？？");
+                }
+
+                if (!File.Exists(targetDllPath))
+                {
+                    File.Copy(dllFilePath, targetDllPath, true); //TODO 文件有可能被占用?
+                }
+                else
+                {
+                    //用于处理已经存在旧版本的情况
+                    var nowDllInfo = new FileInfo(targetDllPath);
+                    var dllInfo = new FileInfo(dllFilePath);
+                    if (dllInfo.Length != nowDllInfo.Length)
+                    {
+                        File.Copy(dllFilePath, targetDllPath, true); //TODO 文件有可能被占用?
+                    }
                 }
             }
 
