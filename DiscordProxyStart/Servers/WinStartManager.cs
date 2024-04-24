@@ -229,7 +229,7 @@ namespace DiscordProxyStart.Servers
             var mainExeFileName = string.Empty;
             if (File.Exists(Path.Combine(path, "Discord.exe")))
             {
-                mainExeFileName = "DiscordCanary.exe";
+                mainExeFileName = "Discord.exe";
             }
             else if (File.Exists(Path.Combine(path, "DiscordCanary.exe")))
             {
