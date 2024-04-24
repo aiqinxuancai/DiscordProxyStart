@@ -21,15 +21,23 @@ namespace DiscordProxyStart.Servers
             var setupPath = SetupPathHelper.GetInstallPath("Discord");
             if (File.Exists(iniPath))
             {
-                var path = IniFileHelper.GetIniValue(iniPath, "Config", "Path");
-                if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+                var customPath = IniFileHelper.GetIniValue(iniPath, "Config", "Path");
+                if (!string.IsNullOrWhiteSpace(customPath))
                 {
-                    setupPath = path;
+                    setupPath = customPath;
                 }
             }
 
-            if (string.IsNullOrEmpty(setupPath) || !Directory.Exists(setupPath))
+            if (string.IsNullOrEmpty(setupPath))
             {
+                MsgBox.Show("Error", "没有找到Discord安装目录#1", MsgBoxButtons.OK);
+                Debug.WriteLine("没有找到安装目录");
+                return;
+            }
+
+            if (!Directory.Exists(setupPath))
+            {
+                //安装目录不存在，使用另外的方式检查Discord.exe
                 var exePath = SetupPathHelper.GetDiscordExePath("Discord");
                 
                 if (File.Exists(exePath))
@@ -38,7 +46,7 @@ namespace DiscordProxyStart.Servers
                 }
                 else
                 {
-                    MsgBox.Show("Error", "没有找到Discord安装目录", MsgBoxButtons.OK);
+                    MsgBox.Show("Error", "没有找到Discord安装目录#2", MsgBoxButtons.OK);
                     Debug.WriteLine("没有找到安装目录");
                     return;
                 }
@@ -109,19 +117,28 @@ namespace DiscordProxyStart.Servers
             try
             {
                 Debug.WriteLine("正在准备启动...");
-                var appPath = GetAppPath(setupPath);
+                var appPaths = GetAppPath(setupPath);
                 var proxy = GetProxy();
                 var copyResult = CopyVersionDll(setupPath);
 
                 //TODO 自动gost转换socks代理？
+                var mainExeFileName = "Discord.exe";
+                var appPath = appPaths.FirstOrDefault();
+                if (File.Exists(Path.Combine(appPath, "DiscordCanary.exe")))
+                {
+                    mainExeFileName = "DiscordCanary.exe";
+                }
 
-                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath.FirstOrDefault()))
+
+                if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath))
                 {
                     Debug.WriteLine("启动进程...");
+
+     
                     var process = new Process();
                     process.StartInfo.FileName = updatePath;
-                    process.StartInfo.Arguments = $"--processStart Discord.exe --a=--proxy-server={proxy}";
-                    process.StartInfo.WorkingDirectory = appPath.FirstOrDefault();
+                    process.StartInfo.Arguments = $"--processStart {mainExeFileName} --a=--proxy-server={proxy}";
+                    process.StartInfo.WorkingDirectory = appPath;
                     process.Start();
 
                     //TODO 等待升级窗口出现并销毁

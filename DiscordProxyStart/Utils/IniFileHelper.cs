@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordProxyStart.Utils
@@ -13,41 +14,48 @@ namespace DiscordProxyStart.Utils
     {
         public static string GetIniValue(string filePath, string sectionName, string keyName)
         {
-
             try
             {
-                using (StreamReader reader = new StreamReader(filePath))
+                string fileContent = File.ReadAllText(filePath, Encoding.UTF8);
+
+                fileContent = Regex.Replace(fileContent, @"\r\n?|\n", "\n");
+
+                using (StringReader reader = new StringReader(fileContent))
                 {
                     string line;
+                    bool isInSection = false;
+
                     while ((line = reader.ReadLine()) != null)
                     {
-                        // 判断是否为指定的 Section
-                        if (line.Trim().StartsWith($"[{sectionName}]"))
+                        line = line.Trim();
+
+                        if (!isInSection)
                         {
-                            // 读取 Key 对应的值
-                            while ((line = reader.ReadLine()) != null && line.Trim().StartsWith(keyName))
+                            if (line.StartsWith($"[{sectionName}]"))
                             {
-                                string[] parts = line.Split('=', 2);
-                                if (parts.Length == 2)
-                                {
-                                    // 返回值
-                                    string value = parts[1].Trim();
-                                    return value;
-                                }
+                                isInSection = true;
+                            }
+                        }
+                        else
+                        {
+                            if (line.StartsWith("["))
+                            {
+                                break;
+                            }
+                            if (line.StartsWith(keyName))
+                            {
+                                string[] parts = line.Split(new[] { '=' }, 2);
+                                return parts.Length == 2 ? parts[1].Trim() : string.Empty;
                             }
                         }
                     }
                 }
-
             }
             catch (Exception ex)
             {
-
-
+                
             }
 
-
-            // 如果未找到则返回空字符串
             return string.Empty;
         }
 
@@ -79,10 +87,7 @@ namespace DiscordProxyStart.Utils
 
                     if (!keyExists)
                     {
-                        List<string> newLines = new List<string>();
-                        newLines.AddRange(lines.Take(i + 1));
-                        newLines.Add($"{keyName}={value}");
-                        newLines.AddRange(lines.Skip(i + 1));
+                        List<string> newLines = [.. lines.Take(i + 1), $"{keyName}={value}", .. lines.Skip(i + 1)];
                         lines = newLines.ToArray();
                     }
 
@@ -92,10 +97,7 @@ namespace DiscordProxyStart.Utils
 
             if (!sectionExists)
             {
-                List<string> newLines = new List<string>();
-                newLines.AddRange(lines);
-                newLines.Add($"[{sectionName}]");
-                newLines.Add($"{keyName}={value}");
+                List<string> newLines = [.. lines, $"[{sectionName}]", $"{keyName}={value}"];
                 lines = newLines.ToArray();
             }
 
