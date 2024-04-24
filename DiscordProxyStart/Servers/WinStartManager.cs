@@ -122,13 +122,8 @@ namespace DiscordProxyStart.Servers
                 var copyResult = CopyVersionDll(setupPath);
 
                 //TODO 自动gost转换socks代理？
-                var mainExeFileName = "Discord.exe";
-                var appPath = appPaths.FirstOrDefault();
-                if (File.Exists(Path.Combine(appPath, "DiscordCanary.exe")))
-                {
-                    mainExeFileName = "DiscordCanary.exe";
-                }
 
+                var appPath = appPaths.FirstOrDefault();
 
                 if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath))
                 {
@@ -137,7 +132,7 @@ namespace DiscordProxyStart.Servers
      
                     var process = new Process();
                     process.StartInfo.FileName = updatePath;
-                    process.StartInfo.Arguments = $"--processStart {mainExeFileName} --a=--proxy-server={proxy}";
+                    process.StartInfo.Arguments = $"--processStart {GetPathDiscordName(appPath)} --a=--proxy-server={proxy}";
                     process.StartInfo.WorkingDirectory = appPath;
                     process.Start();
 
@@ -214,7 +209,6 @@ namespace DiscordProxyStart.Servers
         {
             var subDirs = Directory.GetDirectories(setupPath);
             List<string> paths = new List<string>();
-            var dllFilePath = Path.Combine(AppContext.BaseDirectory, "Data", "version.dll");
 
             foreach (var subDir in subDirs)
             {
@@ -227,6 +221,21 @@ namespace DiscordProxyStart.Servers
             }
 
             return paths;
+        }
+
+
+        private static string GetPathDiscordName(string path)
+        {
+            var mainExeFileName = string.Empty;
+            if (File.Exists(Path.Combine(path, "Discord.exe")))
+            {
+                mainExeFileName = "DiscordCanary.exe";
+            }
+            else if (File.Exists(Path.Combine(path, "DiscordCanary.exe")))
+            {
+                mainExeFileName = "DiscordCanary.exe";
+            }
+            return mainExeFileName;
         }
 
         /// <summary>
@@ -242,7 +251,7 @@ namespace DiscordProxyStart.Servers
 
             foreach (var path in appPath)
             {
-                var discordExePath = Path.Combine(path, "Discord.exe");
+                var discordExePath = Path.Combine(path, GetPathDiscordName(path));
                 var exeMachineType = PEUtils.GetExecutableMachineType(discordExePath);
                 var targetDllPath = Path.Combine(path, "version.dll");
                 var dllFilePath = Path.Combine(AppContext.BaseDirectory, "x86", "version.dll");
