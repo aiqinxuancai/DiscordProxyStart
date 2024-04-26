@@ -1,5 +1,6 @@
 ﻿using DiscordProxyStart.Servers;
 using DiscordProxyStart.Utils;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
