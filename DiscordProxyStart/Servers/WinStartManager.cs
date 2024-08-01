@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DiscordProxyStart.Servers
 {
@@ -32,8 +33,7 @@ namespace DiscordProxyStart.Servers
 
             if (string.IsNullOrEmpty(setupPath))
             {
-                MsgBox.Show("Error", "没有找到Discord安装目录#1", MsgBoxButtons.OK);
-                Debug.WriteLine("没有找到安装目录");
+                ShowError("Error", "没有找到Discord安装目录#1");
                 return;
             }
 
@@ -48,8 +48,7 @@ namespace DiscordProxyStart.Servers
                 }
                 else
                 {
-                    MsgBox.Show("Error", "没有找到Discord安装目录#2", MsgBoxButtons.OK);
-                    Debug.WriteLine("没有找到安装目录");
+                    ShowError("Error", "没有找到Discord安装目录#2");
                     return;
                 }
                 
@@ -72,7 +71,7 @@ namespace DiscordProxyStart.Servers
             try
             {
                 var setupPath = Path.GetDirectoryName(Path.GetDirectoryName(exePath));
-                Debug.WriteLine("正在准备启动...");
+                SimpleLogger.Instance.Info("正在准备启动...");
                 var appPath = GetAppPath(setupPath);
                 var proxy = GetProxy();
                 var copyResult = CopyVersionDll(setupPath);
@@ -83,10 +82,10 @@ namespace DiscordProxyStart.Servers
 
                 if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPathFirst))
                 {
-                    Debug.WriteLine($"启动进程...{exePath}");
+                    SimpleLogger.Instance.Info($"启动进程...{exePath}");
 
                     var cmd = $@"--proxy-server={proxy} --user-data-dir={Path.Combine(setupPath, "data")}";
-                    Debug.WriteLine($"启动进程参数...{cmd}");
+                    SimpleLogger.Instance.Info($"启动进程参数...{cmd}");
                     var process = new Process();
                     process.StartInfo.FileName = exePath;
                     process.StartInfo.Arguments = cmd;
@@ -98,13 +97,13 @@ namespace DiscordProxyStart.Servers
                 }
                 else
                 {
-                    MsgBox.Show("Error", $"{exePath}\n{proxy}\n{copyResult}\n{appPathFirst}\n{setupPath}", MsgBoxButtons.OK);
+                    ShowError("Error", $"{exePath}\n{proxy}\n{copyResult}\n{appPathFirst}\n{setupPath}");
                 }
 
             }
             catch (Exception ex)
             {
-                MsgBox.Show("Error#1", ex.Message, MsgBoxButtons.OK);
+                ShowError("Error#1", ex.Message);
             }
         }
 
@@ -114,14 +113,13 @@ namespace DiscordProxyStart.Servers
 
             if (!File.Exists(updatePath))
             {
-                MsgBox.Show("Error", "没有找到入口程序Update.exe", MsgBoxButtons.OK);
-                Debug.WriteLine("没有找到入口程序Update.exe");
+                ShowError("Error", "没有找到入口程序Update.exe");
                 return;
             }
 
             try
             {
-                Debug.WriteLine("正在准备启动...");
+                SimpleLogger.Instance.Info("正在准备启动...");
                 var appPaths = GetAppPath(setupPath);
                 var proxy = GetProxy();
                 var copyResult = CopyVersionDll(setupPath);
@@ -131,10 +129,7 @@ namespace DiscordProxyStart.Servers
                 var appPath = appPaths.lastVersionPath; //TODO 需要取最新版本 并且循环
                 if (!string.IsNullOrEmpty(proxy) && copyResult && Directory.Exists(appPath))
                 {
-                    Debug.WriteLine($"启动进程 {updatePath} ...");
-
-     
-                    
+                    SimpleLogger.Instance.Info($"启动进程 {updatePath} ...");
                     var process = new Process();
                     process.StartInfo.FileName = updatePath;
                     process.StartInfo.Arguments = $"--processStart {GetPathDiscordName(appPath)} --a=--proxy-server={proxy}";
@@ -148,8 +143,7 @@ namespace DiscordProxyStart.Servers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error: {ex}");
-                MsgBox.Show("Error#2", ex.Message, MsgBoxButtons.OK);
+                ShowError("Error#2", ex.Message);
             }
         }
 
@@ -157,7 +151,7 @@ namespace DiscordProxyStart.Servers
 
         private static void WaitUpdater(string setupPath)
         {
-
+            SimpleLogger.Instance.Info("等待更新UI");
 
             int fullWaitCount = 0;
             //等待窗口出现
@@ -172,7 +166,7 @@ namespace DiscordProxyStart.Servers
                 }
             }
 
-            Debug.WriteLine("Discord Updater已创建");
+            SimpleLogger.Instance.Info("[Discord Updater]已创建，准备释放DLL文件");
 
             while (User32.FindWindow("Chrome_WidgetWin_1", "Discord Updater") > 0) //等待更新窗口销毁
             {
@@ -180,7 +174,7 @@ namespace DiscordProxyStart.Servers
                 Task.Delay(100).Wait();
             }
 
-            Debug.WriteLine("Discord Updater已销毁");
+            SimpleLogger.Instance.Info("[Discord Updater]已销毁");
         }
 
 
@@ -233,15 +227,8 @@ namespace DiscordProxyStart.Servers
                             lastVersion = version;
                             lastPath = subDir;
                         }
-
-
                         paths.Add(subDir);
                     }
-
-
-
-
-                    
                 }
             }
 
@@ -322,12 +309,20 @@ namespace DiscordProxyStart.Servers
                 catch (Exception ex)
                 {
                     //某个目录无法复制，可能是原因目录是空的，或者没有权限等问题。
+                    SimpleLogger.Instance.Error(ex);
                 }
             }
 
 
             return runCount > 0;
 
+        }
+
+        private static void ShowError(string title, string message)
+        {
+            SimpleLogger.Instance.Info(@"[ShowError]{title}-{message}");
+            MsgBox.Show(title, message, MsgBoxButtons.OK);
+           
         }
     }
 }
