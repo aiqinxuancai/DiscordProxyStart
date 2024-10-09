@@ -5,6 +5,7 @@ This project uses the proxy method provided by https://github.com/aiqinxuancai/d
 
 ### Getting Started
 After downloading the release, extract everything to any directory, modify the Config.ini file in the directory to add your local proxy address, and then run the DiscordProxyStart.exe file to start Discord with proxy support.
+
 Example Config.ini configuration:
 ```ini
 [Config]
