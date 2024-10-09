@@ -1,4 +1,6 @@
 # DiscordProxyStart
+实验项目，快速启动一个添加代理的Discord进程。
+
 本项目使用 https://github.com/aiqinxuancai/discord-proxy 中提供的代理方式，简化操作，无需复制version.dll，无需修改快捷方式，减少其中可能出现的问题。
 
 ### 开始使用
