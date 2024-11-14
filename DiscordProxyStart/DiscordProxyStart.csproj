@@ -27,5 +27,10 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+		<None Include="..\.github\workflows\dotnet-core-desktop.yml">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		
 	</ItemGroup>
 </Project>

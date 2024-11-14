@@ -1,4 +1,5 @@
-﻿using DiscordProxyStart.Utils;
+﻿using DiscordProxyStart.Services;
+using DiscordProxyStart.Utils;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,9 @@ namespace DiscordProxyStart.Servers
 
             
             var iniPath = Path.Combine(AppContext.BaseDirectory, "Config.ini");
+
+
+            
 
             //如果配置文件中有配置
             var setupPath = SetupPathHelper.GetInstallPath("Discord");
@@ -74,6 +78,9 @@ namespace DiscordProxyStart.Servers
                 SimpleLogger.Instance.Info("正在准备启动...");
                 var appPath = GetAppPath(setupPath);
                 var proxy = GetProxy();
+
+                //
+
                 var copyResult = CopyVersionDll(setupPath);
 
                 //TODO 自动gost转换socks代理？
@@ -201,6 +208,16 @@ namespace DiscordProxyStart.Servers
             {
                 throw new Exception("Config.ini中未设置代理地址");
             }
+
+            //如果代理是socks开头，则启用Gost来中转，同时可支持账号密码
+            if (proxy.ToLower().StartsWith("socks"))
+            {
+                //代理需要转发
+                GostManager.Instance.StartProxy(proxy, 63121);
+                return "http://127.0.0.1:63121";
+            }
+
+            
 
             return proxy.Replace("\"", "").Trim();
         }
