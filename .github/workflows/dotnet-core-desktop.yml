@@ -16,7 +16,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.0.*'
+          dotnet-version: '9.0.*'
       - run: dotnet publish -c Release --runtime win-x64 --self-contained=true /p PublishAot=true
       - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.10/x64.zip -o x64.zip
       - run: powershell Expand-Archive -Path .\x64.zip -DestinationPath .\x64
@@ -32,9 +32,9 @@ jobs:
       - run: powershell Expand-Archive -Path .\gost.zip -DestinationPath .\gost
       - run: powershell Copy-Item -Path ".\gost\gost.exe" -Destination ".\build"
 
-      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net8.0\win-x64\publish\DiscordProxyStart.exe" -Destination ".\build"
-      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net8.0\win-x64\publish\DiscordProxyStart.pdb" -Destination ".\build"
-      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net8.0\win-x64\publish\Config.ini" -Destination ".\build"
+      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net9.0\win-x64\publish\DiscordProxyStart.exe" -Destination ".\build"
+      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net9.0\win-x64\publish\DiscordProxyStart.pdb" -Destination ".\build"
+      - run: powershell Copy-Item -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net9.0\win-x64\publish\Config.ini" -Destination ".\build"
       #- run: powershell Compress-Archive -Path "$env:GITHUB_WORKSPACE\DiscordProxyStart\bin\Release\net7.0\win-x64\publish\DiscordProxyStart.exe", ".\Release\version.dll"  -DestinationPath .\DiscordProxyStart.zip
 
       - run: powershell Compress-Archive -Path ".\build" -DestinationPath ".\DiscordProxyStart-win-amd64.zip"
