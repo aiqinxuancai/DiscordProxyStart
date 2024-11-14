@@ -76,7 +76,7 @@ namespace DiscordProxyStart.Services
             var currentProcess = new Process { StartInfo = startInfo };
             currentProcess.Start();
             //currentProcess.WaitForExit();
-            Thread.Sleep(3000);
+            Thread.Sleep(1500);
         }
     }
 
