@@ -18,12 +18,12 @@ jobs:
         with:
           dotnet-version: '9.0.*'
       - run: dotnet publish -c Release --runtime win-x64 --self-contained=true /p PublishAot=true
-      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.10/x64.zip -o x64.zip
+      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.12/x64.zip -o x64.zip
       - run: powershell Expand-Archive -Path .\x64.zip -DestinationPath .\x64
       - run: powershell New-Item -ItemType Directory -Force -Path ".\build\x64"
       - run: powershell Copy-Item -Path ".\x64\version.dll" -Destination ".\build\x64"
 
-      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.10/x86.zip -o x86.zip
+      - run: powershell curl https://github.com/aiqinxuancai/discord-proxy/releases/download/v0.0.12/x86.zip -o x86.zip
       - run: powershell Expand-Archive -Path .\x86.zip -DestinationPath .\x86
       - run: powershell New-Item -ItemType Directory -Force -Path ".\build\x86"
       - run: powershell Copy-Item -Path ".\x86\version.dll" -Destination ".\build\x86"

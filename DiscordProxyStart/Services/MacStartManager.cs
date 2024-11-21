@@ -48,7 +48,7 @@ namespace DiscordProxyStart.Servers
         {
             //读取本地ini配置，读取
             var iniPath = Path.Combine(AppContext.BaseDirectory, "Config.ini");
-
+            IniFile ini = new IniFile(iniPath);
             if (!File.Exists(iniPath))
             {
                 var firstIni = """
@@ -61,7 +61,7 @@ namespace DiscordProxyStart.Servers
                 throw new Exception("没有找到配置文件Config.ini，已自动生成，请在Proxy=后填写代理地址");
             }
 
-            var proxy = IniFileHelper.GetIniValue(iniPath, "Config", "Proxy");
+            var proxy = ini.GetValue("Config", "Proxy");
 
             if (string.IsNullOrEmpty(proxy))
             {

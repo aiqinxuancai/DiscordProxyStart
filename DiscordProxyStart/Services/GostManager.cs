@@ -2,6 +2,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Sockets;
+using System.Net;
 using System.Threading;
 
 
@@ -61,13 +63,17 @@ namespace DiscordProxyStart.Services
             }
         }
 
-        public void StartProxy(string socksProxyAddress, int localHttpPort)
+        public int StartProxy(string socksProxyAddress)
         {
             KillExistingGostProcess();
+
+            // 获取一个可用的随机端口
+            int port = GetAvailablePort();
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = gostPath,
-                Arguments = $"-L=http://127.0.0.1:{localHttpPort} -F={socksProxyAddress}",
+                Arguments = $"-L=http://127.0.0.1:{port} -F={socksProxyAddress}",
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
@@ -75,9 +81,45 @@ namespace DiscordProxyStart.Services
             Debug.WriteLine(startInfo.Arguments);
             var currentProcess = new Process { StartInfo = startInfo };
             currentProcess.Start();
-            //currentProcess.WaitForExit();
             Thread.Sleep(1500);
+
+            return port;
         }
+
+        private int GetAvailablePort()
+        {
+            Random random = new Random();
+            while (true)
+            {
+                // 在63000-64000之间随机选择一个端口
+                int port = random.Next(63000, 64000);
+
+                // 检查端口是否被占用
+                if (!IsPortInUse(port))
+                {
+                    return port;
+                }
+            }
+        }
+
+        private bool IsPortInUse(int port)
+        {
+            try
+            {
+                // 检查TCP端口
+                using (var tcpListener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, port))
+                {
+                    tcpListener.Start();
+                    tcpListener.Stop();
+                    return false;
+                }
+            }
+            catch (SocketException)
+            {
+                return true;
+            }
+        }
+
     }
 
 

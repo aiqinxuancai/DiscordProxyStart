@@ -18,17 +18,14 @@ namespace DiscordProxyStart.Servers
         public static void Start()
         {
 
-            
             var iniPath = Path.Combine(AppContext.BaseDirectory, "Config.ini");
-
-
-            
+            IniFile ini = new IniFile(iniPath);
 
             //如果配置文件中有配置
             var setupPath = SetupPathHelper.GetInstallPath("Discord");
             if (File.Exists(iniPath))
             {
-                var customPath = IniFileHelper.GetIniValue(iniPath, "Config", "Path");
+                var customPath = ini.GetValue("Config", "Path");
                 if (!string.IsNullOrWhiteSpace(customPath))
                 {
                     setupPath = customPath;
@@ -78,8 +75,6 @@ namespace DiscordProxyStart.Servers
                 SimpleLogger.Instance.Info("正在准备启动...");
                 var appPath = GetAppPath(setupPath);
                 var proxy = GetProxy();
-
-                //
 
                 var copyResult = CopyVersionDll(setupPath);
 
@@ -190,6 +185,9 @@ namespace DiscordProxyStart.Servers
             //读取本地ini配置，读取
             var iniPath = Path.Combine(AppContext.BaseDirectory, "Config.ini");
 
+            IniFile ini = new IniFile(iniPath);
+
+
             if (!File.Exists(iniPath))
             {
                 var firstIni = """
@@ -202,23 +200,29 @@ namespace DiscordProxyStart.Servers
                 throw new Exception("没有找到配置文件Config.ini，已自动生成，请在Proxy=后填写代理地址");
             }
 
-            var proxy = IniFileHelper.GetIniValue(iniPath, "Config", "Proxy");
+            var proxy = ini.GetValue("Config", "Proxy");
 
             if (string.IsNullOrEmpty(proxy))
             {
                 throw new Exception("Config.ini中未设置代理地址");
             }
-
-            //如果代理是socks开头，则启用Gost来中转，同时可支持账号密码
-            if (proxy.ToLower().StartsWith("socks"))
+            ProxyParser proxyParser = ProxyParser.Parse(proxy);
+            
+            //如果是需要认证的，则采用gost转发的策略
+            if (proxyParser.RequiresAuthentication)
             {
-                //代理需要转发
-                GostManager.Instance.StartProxy(proxy, 63121);
-                return "http://127.0.0.1:63121";
+                try
+                {
+                    var port = GostManager.Instance.StartProxy(proxy);
+                    return $"http://127.0.0.1:{port}";
+                }
+                catch (Exception ex)
+                {
+                }
+    
             }
 
-            
-
+           
             return proxy.Replace("\"", "").Trim();
         }
 
