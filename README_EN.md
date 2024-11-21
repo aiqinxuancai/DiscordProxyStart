@@ -11,9 +11,17 @@ Example Config.ini configuration:
 [Config]
 Proxy=http://127.0.0.1:1080
 ```
+#### Proxy Format Examples
+```
+http://127.0.0.1:1080
+http://user:password@127.0.0.1:1080
+socks://127.0.0.1:1080
+socks5://127.0.0.1:1080
+socks5://user:password@127.0.0.1:1080
+...
+```
 
+
+### Auto Start with Windows
 You can press Win+R, type shell:startup, and press enter. Then, hold the Alt key and drag the DiscordProxyStart.exe to this directory to enable startup launch.
 
----
-
-In version 0.0.14, support for SOCKS proxy format has been added: `socks5://ip:port`, `socks://username:password@ip:port`, etc.
