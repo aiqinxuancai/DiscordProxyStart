@@ -3,6 +3,8 @@
 
 本项目使用 [discord-proxy](https://github.com/aiqinxuancai/discord-proxy) 中提供的代理方式，简化操作，无需复制version.dll，无需修改快捷方式，减少其中可能出现的问题。
 
+对于需要账号密码的代理地址，会自动使用gost在本地做一层协议转换，转换为一个无需密码的http代理来使用。
+
 [English](README_EN.md)
 
 ### 开始使用
