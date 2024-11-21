@@ -14,7 +14,15 @@ Config.ini配置例子：
 Proxy=http://127.0.0.1:1080
 ```
 
-你可以按下`Win+R`输入`shell:startup`回车，按住`Alt`键拖动`DiscordProxyStart.exe`到此目录中实现开机启动。
+#### 代理格式例子
+```
+http://127.0.0.1:1080
+http://user:password@127.0.0.1:1080
+socks://127.0.0.1:1080
+socks5://127.0.0.1:1080
+socks5://user:password@127.0.0.1:1080
+...
+```
 
----
-在0.0.14版本中，已支持socks代理格式：`socks5://ip:port` `socks://username:password@ip:port` 等。
+### 开机启动
+你可以按下`Win+R`输入`shell:startup`回车，按住`Alt`键拖动`DiscordProxyStart.exe`到此目录中实现开机启动。
