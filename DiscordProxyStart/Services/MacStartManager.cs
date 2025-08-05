@@ -58,14 +58,14 @@ namespace DiscordProxyStart.Servers
                 File.WriteAllText(iniPath, firstIni);
 
                 //创建文件
-                throw new Exception("没有找到配置文件Config.ini，已自动生成，请在Proxy=后填写代理地址");
+                throw new Exception(LocalizationManager.Instance.GetString("ConfigNotFound"));
             }
 
             var proxy = ini.GetValue("Config", "Proxy");
 
             if (string.IsNullOrEmpty(proxy))
             {
-                throw new Exception("Config.ini中未设置代理地址");
+                throw new Exception(LocalizationManager.Instance.GetString("ProxyNotSet"));
             }
 
             return proxy.Replace("\"", "").Trim();

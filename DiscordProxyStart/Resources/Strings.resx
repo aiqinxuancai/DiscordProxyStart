@@ -1,0 +1,72 @@
+
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ConfigNotFound" xml:space="preserve">
+    <value>Config.ini not found, it has been automatically generated, please fill in the proxy address after Proxy=</value>
+  </data>
+  <data name="ProxyNotSet" xml:space="preserve">
+    <value>The proxy address is not set in Config.ini</value>
+  </data>
+  <data name="DiscordNotFound1" xml:space="preserve">
+    <value>Discord installation directory not found #1</value>
+  </data>
+  <data name="DiscordNotFound2" xml:space="preserve">
+    <value>Discord installation directory not found #2</value>
+  </data>
+  <data name="UpdateExeNotFound" xml:space="preserve">
+    <value>Update.exe not found</value>
+  </data>
+  <data name="DllNotFound" xml:space="preserve">
+    <value>Local {0} not found</value>
+  </data>
+  <data name="DiscordExeNotFound" xml:space="preserve">
+    <value>Target path does not have {0} ???</value>
+  </data>
+    <data name="ProxyUrlEmpty" xml:space="preserve">
+    <value>Proxy URL cannot be null or empty.</value>
+  </data>
+  <data name="ProxyUrlInvalid" xml:space="preserve">
+    <value>Invalid proxy URL format.</value>
+  </data>
+</root>

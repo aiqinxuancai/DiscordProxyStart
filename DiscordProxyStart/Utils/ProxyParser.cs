@@ -41,7 +41,7 @@ namespace DiscordProxyStart.Utils
         public static ProxyParser Parse(string proxyUrl)
         {
             if (string.IsNullOrWhiteSpace(proxyUrl))
-                throw new ArgumentException("Proxy URL cannot be null or empty.", nameof(proxyUrl));
+                throw new ArgumentException(LocalizationManager.Instance.GetString("ProxyUrlEmpty"), nameof(proxyUrl));
 
             Uri uri;
             try
@@ -55,7 +55,7 @@ namespace DiscordProxyStart.Utils
             }
             catch (UriFormatException ex)
             {
-                throw new ArgumentException("Invalid proxy URL format.", ex);
+                throw new ArgumentException(LocalizationManager.Instance.GetString("ProxyUrlInvalid"), ex);
             }
 
             var proxy = new ProxyParser();

@@ -34,7 +34,7 @@ namespace DiscordProxyStart.Servers
 
             if (string.IsNullOrEmpty(setupPath))
             {
-                ShowError("Error", "没有找到Discord安装目录#1");
+                ShowError(LocalizationManager.Instance.GetString("Error"), LocalizationManager.Instance.GetString("DiscordNotFound1"));
                 return;
             }
 
@@ -49,7 +49,7 @@ namespace DiscordProxyStart.Servers
                 }
                 else
                 {
-                    ShowError("Error", "没有找到Discord安装目录#2");
+                    ShowError(LocalizationManager.Instance.GetString("Error"), LocalizationManager.Instance.GetString("DiscordNotFound2"));
                     return;
                 }
                 
@@ -115,7 +115,7 @@ namespace DiscordProxyStart.Servers
 
             if (!File.Exists(updatePath))
             {
-                ShowError("Error", "没有找到入口程序Update.exe");
+                ShowError(LocalizationManager.Instance.GetString("Error"), LocalizationManager.Instance.GetString("UpdateExeNotFound"));
                 return;
             }
 
@@ -197,14 +197,14 @@ namespace DiscordProxyStart.Servers
                 File.WriteAllText(iniPath, firstIni);
 
                 //创建文件
-                throw new Exception("没有找到配置文件Config.ini，已自动生成，请在Proxy=后填写代理地址");
+                throw new Exception(LocalizationManager.Instance.GetString("ConfigNotFound"));
             }
 
             var proxy = ini.GetValue("Config", "Proxy");
 
             if (string.IsNullOrEmpty(proxy))
             {
-                throw new Exception("Config.ini中未设置代理地址");
+                throw new Exception(LocalizationManager.Instance.GetString("ProxyNotSet"));
             }
             ProxyParser proxyParser = ProxyParser.Parse(proxy);
             
@@ -295,19 +295,24 @@ namespace DiscordProxyStart.Servers
                         var targetDllPath = Path.Combine(path, "version.dll");
                         var dllFilePath = Path.Combine(AppContext.BaseDirectory, "x86", "version.dll");
 
+                       
+
+
                         if (exeMachineType == PEUtils.MachineType.IMAGE_FILE_MACHINE_AMD64)
                         {
                             dllFilePath = Path.Combine(AppContext.BaseDirectory, "x64", "version.dll");
                         }
 
+                        SimpleLogger.Instance.Info($"[CopyVersionDll]正在复制DLL文件 {dllFilePath} -> ...");
+
 
                         if (!File.Exists(dllFilePath))
                         {
-                            throw new FileNotFoundException($"没有找到本地的 {dllFilePath}");
+                            throw new FileNotFoundException(LocalizationManager.Instance.GetString("DllNotFound", dllFilePath));
                         }
                         if (!File.Exists(discordExePath))
                         {
-                            throw new FileNotFoundException($"目标路径没有 {discordExePath} ？？？");
+                            throw new FileNotFoundException(LocalizationManager.Instance.GetString("DiscordExeNotFound", discordExePath));
                         }
 
                         if (!File.Exists(targetDllPath))
